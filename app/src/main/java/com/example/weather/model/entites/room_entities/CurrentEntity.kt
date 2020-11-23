@@ -3,6 +3,8 @@ package com.example.weather.model.entites.room_entities
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.example.weather.model.entites.domain_objects.CurrentWeather
+import com.example.weather.model.entites.domain_objects.Weather
 
 
 @Entity(
@@ -14,6 +16,7 @@ import androidx.room.PrimaryKey
     )]
 )
 data class CurrentEntity(
+    val dt:Int,
     val sunrise: Int,
     val sunset: Int,
     val temp: Double,
@@ -24,10 +27,28 @@ data class CurrentEntity(
     val visibility: Int,
     val windSpeed: Double,
     val windDeg: Int,
-    val rain:Double,
-    val snow:Double
+    val rain: Double,
+    val snow: Double
 ) {
     @PrimaryKey(autoGenerate = true)
     var dbId: Int = 0
     var weatherInfoId: Int = 0
 }
+
+fun CurrentEntity.asDomainObject(weatherList: List<Weather>): CurrentWeather = CurrentWeather(
+    dbId,
+    weatherInfoId,
+    sunrise,
+    sunset,
+    temp,
+    feelsLike,
+    pressure,
+    humidity,
+    clouds,
+    visibility,
+    windSpeed,
+    windDeg,
+    rain,
+    snow,
+    weatherList
+)

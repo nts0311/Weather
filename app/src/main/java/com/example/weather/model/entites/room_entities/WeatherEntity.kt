@@ -3,6 +3,7 @@ package com.example.weather.model.entites.room_entities
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.example.weather.model.entites.domain_objects.Weather
 
 @Entity(
     foreignKeys = [ForeignKey(
@@ -34,3 +35,6 @@ data class WeatherEntity(
     var dbId: Int = 0
     var baseId: Int = 0
 }
+
+fun List<WeatherEntity>.toDomainObject(): List<Weather> =
+    map { Weather(it.dbId, it.baseId, it.id, it.main, it.description, it.icon) }

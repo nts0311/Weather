@@ -14,6 +14,7 @@ data class CurrentWeather(
     val windSpeed: Double,
     val windDeg: Int,
     val rain: Double,
-    val snow: Double
+    val snow: Double,
+    val weather : List<Weather>
 ) {
 }

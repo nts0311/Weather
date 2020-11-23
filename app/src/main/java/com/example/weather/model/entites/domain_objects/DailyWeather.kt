@@ -23,6 +23,7 @@ data class DailyWeather(
     val clouds: Int,
     val rain: Double,
     val snow: Double,
-    val pop: Int,
+    val pop: Double,
+    val weather: List<Weather>,
 ) {
 }

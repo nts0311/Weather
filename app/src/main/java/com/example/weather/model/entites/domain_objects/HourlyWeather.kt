@@ -1,5 +1,6 @@
 package com.example.weather.model.entites.domain_objects
 
+
 class HourlyWeather(
     var dbId: Int,
     var weatherInfoId: Int,
@@ -12,8 +13,9 @@ class HourlyWeather(
     val visibility: Int,
     val windSpeed: Double,
     val windDeg: Int,
-    val pop: Int,
+    val pop: Double,
     val rain: Double,
-    val snow: Double
+    val snow: Double,
+    val weather: List<Weather>,
 ) {
 }
