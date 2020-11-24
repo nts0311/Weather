@@ -1,12 +1,10 @@
-package com.example.weather.model.entites.data_transfer_objects
+package com.example.weather.network.data_transfer_objects
 
-import com.example.weather.database.room_entities.CurrentEntity
+import com.example.weather.database.room_entities.HourlyEntity
 
 
-data class OwmCurrent(
+data class OwmHourly(
     val dt: Int,
-    val sunrise: Int,
-    val sunset: Int,
     val temp: Double,
     val feels_like: Double,
     val pressure: Int,
@@ -17,13 +15,12 @@ data class OwmCurrent(
     val wind_deg: Int,
     val rain: OwmRain,
     val snow: OwmSnow,
-    val weather: List<OwmWeather>
+    val weather: List<OwmWeather>,
+    val pop: Double
 )
 
-fun OwmCurrent.asDatabaseObject(): CurrentEntity = CurrentEntity(
+fun OwmHourly.asDatabaseObject(): HourlyEntity = HourlyEntity(
     dt,
-    sunrise,
-    sunset,
     temp,
     feels_like,
     pressure,
@@ -32,6 +29,7 @@ fun OwmCurrent.asDatabaseObject(): CurrentEntity = CurrentEntity(
     visibility,
     wind_speed,
     wind_deg,
+    pop,
     rain.oneHour,
     snow.oneHour
 )

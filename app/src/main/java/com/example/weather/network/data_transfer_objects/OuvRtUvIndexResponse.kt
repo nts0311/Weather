@@ -1,4 +1,4 @@
-package com.example.weather.model.entites.data_transfer_objects
+package com.example.weather.network.data_transfer_objects
 
 import com.example.weather.database.room_entities.UvIndexEntity
 
