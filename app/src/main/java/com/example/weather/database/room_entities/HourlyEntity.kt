@@ -1,4 +1,4 @@
-package com.example.weather.model.entites.room_entities
+package com.example.weather.database.room_entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -29,8 +29,8 @@ data class HourlyEntity(
     val snow: Double
 ) {
     @PrimaryKey(autoGenerate = true)
-    var dbId: Int = 0
-    var weatherInfoId: Int = 0
+    var dbId: Long = 0
+    var weatherInfoId: Long = 0
 }
 
 fun HourlyEntity.asDomainObject(weather: List<Weather>): HourlyWeather = HourlyWeather(

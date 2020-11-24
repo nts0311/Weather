@@ -1,8 +1,8 @@
 package com.example.weather.model.entites.domain_objects
 
 data class DailyWeather(
-    var dbId: Int,
-    var weatherInfoId: Int,
+    var dbId: Long,
+    var weatherInfoId: Long,
     val dt: Int,
     val sunrise: Int,
     val sunset: Int,

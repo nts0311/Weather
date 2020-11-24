@@ -1,6 +1,6 @@
 package com.example.weather.model.entites.data_transfer_objects
 
-import com.example.weather.model.entites.room_entities.DailyEntity
+import com.example.weather.database.room_entities.DailyEntity
 
 
 data class OwmDaily(

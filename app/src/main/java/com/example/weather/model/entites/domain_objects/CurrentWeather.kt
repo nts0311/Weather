@@ -1,8 +1,8 @@
 package com.example.weather.model.entites.domain_objects
 
 data class CurrentWeather(
-    var dbId: Int = 0,
-    var weatherInfoId: Int = 0,
+    var dbId: Long = 0,
+    var weatherInfoId: Long = 0,
     val sunrise: Int,
     val sunset: Int,
     val temp: Double,
@@ -15,6 +15,6 @@ data class CurrentWeather(
     val windDeg: Int,
     val rain: Double,
     val snow: Double,
-    val weather : List<Weather>
+    val weather: List<Weather>
 ) {
 }

@@ -2,8 +2,8 @@ package com.example.weather.model.entites.domain_objects
 
 
 class HourlyWeather(
-    var dbId: Int,
-    var weatherInfoId: Int,
+    var dbId: Long,
+    var weatherInfoId: Long,
     val dt: Int,
     val temp: Double,
     val feelsLike: Double,

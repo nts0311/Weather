@@ -1,7 +1,6 @@
 package com.example.weather.model.entites.data_transfer_objects
 
-import com.example.weather.model.entites.domain_objects.CurrentWeather
-import com.example.weather.model.entites.room_entities.CurrentEntity
+import com.example.weather.database.room_entities.CurrentEntity
 
 
 data class OwmCurrent(
