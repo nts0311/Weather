@@ -18,7 +18,10 @@ class MainActivity : AppCompatActivity()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        viewModel.getWeatherInfoOfLocation(LocationEntity(0.0,0.0,"")).asLiveData()
+        val l = LocationEntity(0.0,0.0,"")
+        viewModel.insertLocation(l)
+
+        viewModel.getWeatherInfoOfLocation(l).asLiveData()
             .observe(this)
             {
                 if(it==null) return@observe

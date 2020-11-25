@@ -5,6 +5,6 @@ import retrofit2.Response
 import retrofit2.http.GET
 
 interface OpenWeatherMapService {
-    @GET("")
+    @GET("b/10UQ/")
     suspend fun getWeatherInfo() : Response<OwmBaseResponse>
 }

@@ -10,9 +10,9 @@ import com.example.weather.model.entites.domain_objects.WeatherInfo
 @Dao
 interface WeatherInfoDao {
     @Insert
-    suspend fun insertWeatherInfo(weatherInfo: WeatherInfoEntity)
+    suspend fun insertWeatherInfo(weatherInfo: WeatherInfoEntity) : Long
 
-    @Query("SELECT * FROM WeatherInfoEntity WHERE locationId=:locationId ORDER BY dt DESC LIMIT 1")
+    @Query("SELECT * FROM WeatherInfoEntity WHERE locationId=:locationId LIMIT 1")
     suspend fun getWeatherInfoByLocation(locationId: Long): WeatherInfoEntity?
 
     @Delete

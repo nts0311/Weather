@@ -11,3 +11,5 @@ data class OwmWeather(
 )
 
 fun OwmWeather.asDatabaseObject(): WeatherEntity = WeatherEntity(id, main, description, icon)
+
+fun List<OwmWeather>.asDatabaseObject() = map{it.asDatabaseObject()}

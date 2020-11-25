@@ -13,8 +13,8 @@ data class OwmHourly(
     val visibility: Int,
     val wind_speed: Double,
     val wind_deg: Int,
-    val rain: OwmRain,
-    val snow: OwmSnow,
+    val rain: OwmRain = OwmRain(),
+    val snow: OwmSnow = OwmSnow(),
     val weather: List<OwmWeather>,
     val pop: Double
 )
@@ -33,3 +33,5 @@ fun OwmHourly.asDatabaseObject(): HourlyEntity = HourlyEntity(
     rain.oneHour,
     snow.oneHour
 )
+
+fun List<OwmHourly>.asDatabaseObject() = map { it.asDatabaseObject() }

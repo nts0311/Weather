@@ -17,15 +17,13 @@ import com.example.weather.model.entites.domain_objects.WeatherInfo
     )]
 )
 data class WeatherInfoEntity(
-    var dt: Int,
-) {
     @PrimaryKey(autoGenerate = true)
-    var dbId: Long = 0
-    var locationId: Long = 0
-}
+    var dbId: Long = 0,
+    var locationId: Long = 1
+)
 
 fun WeatherInfoEntity.asDomainObject(
     currentWeather: CurrentWeather,
     hourly: List<HourlyWeather>,
     daily: List<DailyWeather>
-) = WeatherInfo(dbId, dt, locationId, currentWeather, hourly, daily)
+) = WeatherInfo(dbId, locationId, currentWeather, hourly, daily)

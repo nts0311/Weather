@@ -26,7 +26,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOpenWeatherMapService(moshi: Moshi): OpenWeatherMapService = Retrofit.Builder()
-        .baseUrl("https://jsonkeeper.com/b/10UQ") //testing
+        .baseUrl("https://jsonkeeper.com/") //testing
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .addCallAdapterFactory(CoroutineCallAdapterFactory())
         .build()

@@ -15,8 +15,8 @@ data class OwmCurrent(
     val visibility: Int,
     val wind_speed: Double,
     val wind_deg: Int,
-    val rain: OwmRain,
-    val snow: OwmSnow,
+    val rain: OwmRain = OwmRain(0.0),
+    val snow: OwmSnow = OwmSnow(0.0),
     val weather: List<OwmWeather>
 )
 

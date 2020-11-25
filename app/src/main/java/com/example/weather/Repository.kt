@@ -35,21 +35,40 @@ class Repository @Inject constructor(
     }
         .flowOn(Dispatchers.IO)
 
+    suspend fun addLocation(location: LocationEntity)
+    {
+        appDatabase.locationDao.insertLocation(location)
+    }
+
     private suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse) {
         appDatabase.apply {
-            weatherInfoDao.insertWeatherInfo(owmBaseResponse.asDatabaseObject())
+            val weatherInfoId = weatherInfoDao.insertWeatherInfo(owmBaseResponse.asDatabaseObject())
 
-            currentEntityDao.insertCurrentEntity(owmBaseResponse.current.asDatabaseObject())
-            weatherEntityDao.insertWeatherEntities(owmBaseResponse.current.weather.map { it.asDatabaseObject() })
+            //Current Weather
+            val currentEntity = owmBaseResponse.current.asDatabaseObject()
+            currentEntity.weatherInfoId = weatherInfoId
+            val currentEntityId = currentEntityDao.insertCurrentEntity(currentEntity)
+            val currentWeatherList = owmBaseResponse.current.weather
+                .asDatabaseObject()
+                .onEach { it.baseId = currentEntityId }
+            weatherEntityDao.insertWeatherEntities(currentWeatherList)
 
-            hourlyEntityDao.insertHourlyEntities(owmBaseResponse.hourly.map { it.asDatabaseObject() })
+
+            val hourlyEntities = owmBaseResponse.hourly.asDatabaseObject().onEach { it.weatherInfoId = weatherInfoId }
+            val hourlyIds = hourlyEntityDao.insertHourlyEntities(hourlyEntities)
+            var i = 0
             owmBaseResponse.hourly.forEach {
-                weatherEntityDao.insertWeatherEntities(it.weather.map { w -> w.asDatabaseObject() })
+                val weatherList = it.weather.asDatabaseObject().onEach { w -> w.baseId = hourlyIds[i] }
+                i++
+                weatherEntityDao.insertWeatherEntities(weatherList)
             }
 
-            dailyEntityDao.insertDailyEntities(owmBaseResponse.daily.map { it.asDatabaseObject() })
+            i = 0
+            val dailyIds = dailyEntityDao.insertDailyEntities(owmBaseResponse.daily.map { it.asDatabaseObject() })
             owmBaseResponse.daily.forEach {
-                weatherEntityDao.insertWeatherEntities(it.weather.map { w -> w.asDatabaseObject() })
+                val weatherList = it.weather.asDatabaseObject().onEach { w -> w.baseId = dailyIds[i] }
+                i++
+                weatherEntityDao.insertWeatherEntities(weatherList)
             }
         }
     }

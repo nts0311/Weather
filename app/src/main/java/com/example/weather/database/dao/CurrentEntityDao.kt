@@ -10,6 +10,6 @@ interface CurrentEntityDao {
     @Insert
     suspend fun insertCurrentEntity(currentEntity: CurrentEntity) : Long
 
-    @Query("SELECT * FROM CurrentEntity WHERE weatherInfoId=:weatherInfoId LIMIT 1")
+    @Query("SELECT * FROM CurrentEntity WHERE weatherInfoId=:weatherInfoId ORDER BY dt DESC LIMIT 1")
     suspend fun getCurrentEntity(weatherInfoId: Long): CurrentEntity
 }

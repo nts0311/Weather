@@ -30,7 +30,7 @@ data class HourlyEntity(
 ) {
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
-    var weatherInfoId: Long = 0
+    var weatherInfoId: Long = 1
 }
 
 fun HourlyEntity.asDomainObject(weather: List<Weather>): HourlyWeather = HourlyWeather(

@@ -4,10 +4,9 @@ import com.example.weather.database.room_entities.WeatherInfoEntity
 
 
 data class OwmBaseResponse(
-    val dt: Int,
     val current: OwmCurrent,
     val hourly: List<OwmHourly>,
     val daily: List<OwmDaily>
 )
 
-fun OwmBaseResponse.asDatabaseObject(): WeatherInfoEntity = WeatherInfoEntity(dt)
+fun OwmBaseResponse.asDatabaseObject(): WeatherInfoEntity = WeatherInfoEntity()

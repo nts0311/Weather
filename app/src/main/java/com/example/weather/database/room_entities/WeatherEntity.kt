@@ -33,7 +33,7 @@ data class WeatherEntity(
 ) {
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
-    var baseId: Long = 0
+    var baseId: Long = 1
 }
 
 fun List<WeatherEntity>.toDomainObject(): List<Weather> =

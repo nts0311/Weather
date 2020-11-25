@@ -10,6 +10,6 @@ interface DailyEntityDao {
     @Insert
     suspend fun insertDailyEntities(dailyEntities: List<DailyEntity>): List<Long>
 
-    @Query("SELECT * FROM DailyEntity WHERE weatherInfoId=:weatherInfoId")
+    @Query("SELECT * FROM DailyEntity WHERE weatherInfoId=:weatherInfoId ORDER BY dt DESC")
     suspend fun getDailyEntities(weatherInfoId: Long) : List<DailyEntity>
 }

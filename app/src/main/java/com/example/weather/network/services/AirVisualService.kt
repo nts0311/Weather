@@ -5,6 +5,6 @@ import retrofit2.Response
 import retrofit2.http.GET
 
 interface AirVisualService {
-    @GET("")
+    @GET(".")
     suspend fun getAirQualityIndex() : Response<AirVisualResponse>
 }
