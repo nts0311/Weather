@@ -1,19 +1,19 @@
 package com.example.weather.database.dao
 
 import androidx.room.*
-import com.example.weather.database.room_entities.Location
+import com.example.weather.database.room_entities.LocationEntity
 
 @Dao
 interface LocationDao {
     @Insert
-    suspend fun insertLocation(location: Location): Long
+    suspend fun insertLocation(location: LocationEntity): Long
 
     @Update
-    suspend fun updateLocation(location: Location)
+    suspend fun updateLocation(location: LocationEntity)
 
     @Delete
-    suspend fun deleteLocation(location: Location)
+    suspend fun deleteLocation(location: LocationEntity)
 
-    @Query("SELECT * FROM Location WHERE dbId = :locationId LIMIT 1")
-    suspend fun getLocation(locationId: Long): Location
+    @Query("SELECT * FROM LocationEntity WHERE dbId = :locationId LIMIT 1")
+    suspend fun getLocation(locationId: Long): LocationEntity
 }

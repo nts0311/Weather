@@ -10,18 +10,18 @@ import com.example.weather.model.entites.domain_objects.WeatherInfo
 
 @Entity(
     foreignKeys = [ForeignKey(
-        entity = Location::class,
+        entity = LocationEntity::class,
         parentColumns = arrayOf("dbId"),
         childColumns = arrayOf("locationId"),
         onDelete = ForeignKey.CASCADE
     )]
 )
 data class WeatherInfoEntity(
-    val dt: Int,
+    var dt: Int,
 ) {
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
-    val locationId: Long = 0
+    var locationId: Long = 0
 }
 
 fun WeatherInfoEntity.asDomainObject(

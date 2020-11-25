@@ -5,6 +5,6 @@ import retrofit2.Response
 import retrofit2.http.GET
 
 interface OpenUvService {
-    @GET
+    @GET("")
     suspend fun getUvRealtimeIndex() : Response<OuvRtUvIndexResponse>
 }

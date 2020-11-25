@@ -10,7 +10,7 @@ import com.example.weather.database.room_entities.*
         CurrentEntity::class,
         DailyEntity::class,
         HourlyEntity::class,
-        Location::class,
+        LocationEntity::class,
         UvIndexEntity::class,
         WeatherEntity::class,
         WeatherInfoEntity::class],

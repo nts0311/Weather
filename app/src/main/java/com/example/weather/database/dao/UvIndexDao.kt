@@ -8,7 +8,7 @@ import com.example.weather.database.room_entities.UvIndexEntity
 @Dao
 interface UvIndexDao {
     @Insert
-    suspend fun insertUvIndex() : Long
+    suspend fun insertUvIndex(uvIndexEntity: UvIndexEntity) : Long
 
     @Query("SELECT * FROM UvIndexEntity WHERE weatherInfoId = :weatherInfoId LIMIT 1")
     suspend fun getUvIndex(weatherInfoId:Int) : UvIndexEntity

@@ -8,8 +8,8 @@ import com.example.weather.database.room_entities.DailyEntity
 @Dao
 interface DailyEntityDao {
     @Insert
-    suspend fun insertDailyEntity(dailyEntity: DailyEntity) : Long
+    suspend fun insertDailyEntities(dailyEntities: List<DailyEntity>): List<Long>
 
     @Query("SELECT * FROM DailyEntity WHERE weatherInfoId=:weatherInfoId")
-    suspend fun getDailyEntities(weatherInfoId:Int) : List<DailyEntity>
+    suspend fun getDailyEntities(weatherInfoId: Long) : List<DailyEntity>
 }
