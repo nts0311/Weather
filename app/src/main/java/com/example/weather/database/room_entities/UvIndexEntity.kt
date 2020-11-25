@@ -19,7 +19,7 @@ data class UvIndexEntity(
 ) {
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
-    var weatherInfoId: Long = 1
+    var weatherInfoId: Long = 0
 }
 
 fun UvIndexEntity.asDomainObject(): UvIndex = UvIndex(dbId, weatherInfoId, uv, uvMax)

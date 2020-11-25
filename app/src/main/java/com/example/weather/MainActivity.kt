@@ -2,6 +2,7 @@ package com.example.weather
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.asLiveData
 import com.example.weather.database.room_entities.LocationEntity
@@ -20,7 +21,7 @@ class MainActivity : AppCompatActivity()
 
         val l = LocationEntity(0.0,0.0,"")
         viewModel.insertLocation(l)
-
+        l.dbId = 1
         viewModel.getWeatherInfoOfLocation(l).asLiveData()
             .observe(this)
             {
@@ -28,5 +29,28 @@ class MainActivity : AppCompatActivity()
 
 
             }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            LocationTracker.REQUEST_LOCATION_PERMISSION_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults.all { it == 0 }) {
+                    LocationTracker.getCurrentLocation(this){
+
+                    }
+                } else {
+                    Toast.makeText(
+                        applicationContext,
+                        "Location permissions not granted!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 }

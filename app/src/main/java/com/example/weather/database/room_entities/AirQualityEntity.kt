@@ -16,7 +16,7 @@ import com.example.weather.model.entites.domain_objects.AirQualityIndex
 data class AirQualityEntity(val aqius: Int) {
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
-    var weatherInfoId: Long = 1
+    var weatherInfoId: Long = 0
 }
 
 fun AirQualityEntity.asDomainObject(): AirQualityIndex = AirQualityIndex(dbId, weatherInfoId, aqius)

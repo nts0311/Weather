@@ -9,19 +9,19 @@ import com.example.weather.model.entites.domain_objects.Weather
     foreignKeys = [ForeignKey(
         entity = DailyEntity::class,
         parentColumns = arrayOf("dbId"),
-        childColumns = arrayOf("baseId"),
+        childColumns = arrayOf("dailyWeatherId"),
         onDelete = ForeignKey.CASCADE
     ),
         ForeignKey(
             entity = HourlyEntity::class,
             parentColumns = arrayOf("dbId"),
-            childColumns = arrayOf("baseId"),
+            childColumns = arrayOf("hourlyWeatherId"),
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
             entity = CurrentEntity::class,
             parentColumns = arrayOf("dbId"),
-            childColumns = arrayOf("baseId"),
+            childColumns = arrayOf("currentWeatherId"),
             onDelete = ForeignKey.CASCADE
         )]
 )
@@ -33,8 +33,21 @@ data class WeatherEntity(
 ) {
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
-    var baseId: Long = 1
+    var currentWeatherId: Long? = null
+    var hourlyWeatherId: Long? = null
+    var dailyWeatherId: Long? = null
 }
 
 fun List<WeatherEntity>.toDomainObject(): List<Weather> =
-    map { Weather(it.dbId, it.baseId, it.id, it.main, it.description, it.icon) }
+    map {
+        Weather(
+            it.dbId,
+            it.currentWeatherId,
+            it.hourlyWeatherId,
+            it.dailyWeatherId,
+            it.id,
+            it.main,
+            it.description,
+            it.icon
+        )
+    }

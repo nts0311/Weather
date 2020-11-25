@@ -32,7 +32,7 @@ data class CurrentEntity(
 ) {
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
-    var weatherInfoId: Long = 1
+    var weatherInfoId: Long = 0
 }
 
 fun CurrentEntity.asDomainObject(weatherList: List<Weather>): CurrentWeather = CurrentWeather(

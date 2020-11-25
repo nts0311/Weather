@@ -43,3 +43,5 @@ fun OwmDaily.asDatabaseObject(): DailyEntity = DailyEntity(
     snow,
     pop
 )
+
+fun List<OwmDaily>.asDatabaseObject() = map { it.asDatabaseObject() }

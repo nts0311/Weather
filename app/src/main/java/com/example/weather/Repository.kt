@@ -23,14 +23,13 @@ class Repository @Inject constructor(
     private val appDatabase: AppDatabase
 ) {
     fun getWeatherInfo(location: LocationEntity): Flow<WeatherInfo?> = flow {
-
-        emit(getWeatherInfoFromDb(location))
-
         val owmResponse = openWeatherMapService.getWeatherInfo()
 
         if (owmResponse.isSuccessful) {
             saveWeatherInfoToDb(owmResponse.body()!!)
         }
+
+        emit(getWeatherInfoFromDb(location))
 
     }
         .flowOn(Dispatchers.IO)
@@ -50,7 +49,7 @@ class Repository @Inject constructor(
             val currentEntityId = currentEntityDao.insertCurrentEntity(currentEntity)
             val currentWeatherList = owmBaseResponse.current.weather
                 .asDatabaseObject()
-                .onEach { it.baseId = currentEntityId }
+                .onEach { it.currentWeatherId = currentEntityId }
             weatherEntityDao.insertWeatherEntities(currentWeatherList)
 
 
@@ -58,15 +57,15 @@ class Repository @Inject constructor(
             val hourlyIds = hourlyEntityDao.insertHourlyEntities(hourlyEntities)
             var i = 0
             owmBaseResponse.hourly.forEach {
-                val weatherList = it.weather.asDatabaseObject().onEach { w -> w.baseId = hourlyIds[i] }
+                val weatherList = it.weather.asDatabaseObject().onEach { w -> w.hourlyWeatherId = hourlyIds[i] }
                 i++
                 weatherEntityDao.insertWeatherEntities(weatherList)
             }
 
             i = 0
-            val dailyIds = dailyEntityDao.insertDailyEntities(owmBaseResponse.daily.map { it.asDatabaseObject() })
+            val dailyIds = dailyEntityDao.insertDailyEntities(owmBaseResponse.daily.asDatabaseObject().onEach { it.weatherInfoId = weatherInfoId })
             owmBaseResponse.daily.forEach {
-                val weatherList = it.weather.asDatabaseObject().onEach { w -> w.baseId = dailyIds[i] }
+                val weatherList = it.weather.asDatabaseObject().onEach { w -> w.dailyWeatherId = dailyIds[i] }
                 i++
                 weatherEntityDao.insertWeatherEntities(weatherList)
             }
@@ -84,14 +83,14 @@ class Repository @Inject constructor(
             val dailyEntities = dailyEntityDao.getDailyEntities(weatherInfoEntity.dbId)
 
             val currentWeather =
-                weatherEntityDao.getWeatherEntities(currentEntity.dbId).toDomainObject()
+                weatherEntityDao.getCurrentWeatherEntities(currentEntity.dbId).toDomainObject()
 
             val hourlyWeather = hourlyEntities.map {
-                val weatherRecords = weatherEntityDao.getWeatherEntities(it.dbId).toDomainObject()
+                val weatherRecords = weatherEntityDao.getHourlyWeatherEntities(it.dbId).toDomainObject()
                 it.asDomainObject(weatherRecords)
             }
             val dailyWeather = dailyEntities.map {
-                val weatherRecords = weatherEntityDao.getWeatherEntities(it.dbId).toDomainObject()
+                val weatherRecords = weatherEntityDao.getDailyWeatherEntities(it.dbId).toDomainObject()
                 it.asDomainObject(weatherRecords)
             }
             weatherInfoEntity.asDomainObject(
