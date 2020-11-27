@@ -7,12 +7,11 @@ import androidx.room.PrimaryKey
 data class LocationEntity(
     var lat: Double,
     var long: Double,
-    var name: String
 ) {
-    constructor() : this(0.0,0.0,"")
+    constructor() : this(0.0,0.0)
 
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
 
-
+    var name: String = ""
 }

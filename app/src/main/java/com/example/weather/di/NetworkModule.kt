@@ -32,4 +32,13 @@ object NetworkModule {
         .build()
         .create(OpenWeatherMapService::class.java)
 
+    @Provides
+    @Singleton
+    fun provideAirVisualService(moshi: Moshi): AirVisualService = Retrofit.Builder()
+        .baseUrl("https://jsonkeeper.com/") //testing
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .addCallAdapterFactory(CoroutineCallAdapterFactory())
+        .build()
+        .create(AirVisualService::class.java)
+
 }

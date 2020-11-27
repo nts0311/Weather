@@ -1,6 +1,6 @@
-package com.example.weather
+package com.example.weather.repositories
 
-import android.util.Log
+import android.content.SharedPreferences
 import com.example.weather.database.AppDatabase
 import com.example.weather.database.room_entities.LocationEntity
 import com.example.weather.database.room_entities.asDomainObject
@@ -10,50 +10,49 @@ import com.example.weather.network.Resource
 import com.example.weather.network.data_transfer_objects.OwmBaseResponse
 import com.example.weather.network.data_transfer_objects.asDatabaseObject
 import com.example.weather.network.performNetworkCall
-import com.example.weather.network.services.AirVisualService
 import com.example.weather.network.services.OpenWeatherMapService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class Repository @Inject constructor(
-    private val openWeatherMapService: OpenWeatherMapService,
-    /*private val openUvService: OpenUvService,*/
-    private val airVisualService: AirVisualService,
-    private val appDatabase: AppDatabase
+class WeatherInfoRepository @Inject constructor(
+    private val appDatabase: AppDatabase,
+    private val weatherService: OpenWeatherMapService,
+    private val sharedPreferences: SharedPreferences
 ) {
-    var isNetWorkAvailable: Boolean = false
 
-    fun getWeatherInfoFlow(location: LocationEntity): Flow<WeatherInfo?> = flow {
-        val owmResponse = getWeatherInfo(location)
-        when (owmResponse) {
-            is Resource.Success -> {
-                saveWeatherInfoToDb(owmResponse.data)
+    suspend fun getData(
+        hasGps: Boolean,
+        hasNetwork: Boolean,
+        location: LocationEntity
+    ): Resource<WeatherInfo?> {
+        if (hasNetwork) {
+            if (hasGps) {
+                return when (val fetchingResult = fetchWeatherInfo(location)) {
+                    is Resource.Error -> Resource.Error(fetchingResult.message)
+
+                    is Resource.Success -> {
+                        appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(location.dbId)
+                        saveWeatherInfoToDb(fetchingResult.data)
+                        Resource.Success(getWeatherInfoFromDb(location))
+                    }
+                }
+
+            } else {
+
             }
-            is Resource.Error -> {
-                emit(getWeatherInfoFromDb(location))
+        } else {
+            if(hasGps)
+            {
+
             }
         }
-
-        emit(getWeatherInfoFromDb(location))
-    }
-        .flowOn(Dispatchers.IO)
-
-    suspend fun getWeatherInfo(location: LocationEntity) =
-        performNetworkCall { openWeatherMapService.getWeatherInfo() }
-
-    suspend fun getAirQualityIndex(location: LocationEntity) =
-        performNetworkCall { airVisualService.getAirQualityIndex() }
-
-    suspend fun addLocation(location: LocationEntity) {
-        appDatabase.locationDao.insertLocation(location)
     }
 
-    private suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse) {
+    suspend fun fetchWeatherInfo(location: LocationEntity) =
+        performNetworkCall { weatherService.getWeatherInfo() }
+
+    suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse) {
         appDatabase.apply {
             val weatherInfoId = weatherInfoDao.insertWeatherInfo(owmBaseResponse.asDatabaseObject())
 
@@ -92,7 +91,7 @@ class Repository @Inject constructor(
     }
 
 
-    private suspend fun getWeatherInfoFromDb(location: LocationEntity): WeatherInfo? {
+    suspend fun getWeatherInfoFromDb(location: LocationEntity): WeatherInfo? {
         return appDatabase.run {
             val weatherInfoEntity =
                 weatherInfoDao.getWeatherInfoByLocation(location.dbId) ?: return null
@@ -122,7 +121,4 @@ class Repository @Inject constructor(
         }
     }
 
-    suspend fun deleteLocation(location: LocationEntity) {
-        appDatabase.locationDao.deleteLocation(location)
-    }
 }

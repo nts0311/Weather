@@ -17,4 +17,7 @@ interface WeatherInfoDao {
 
     @Delete
     suspend fun deleteWeatherInfo(weatherInfo: WeatherInfoEntity)
+
+    @Query("DELETE FROM WeatherInfoEntity WHERE locationId = :locationId")
+    suspend fun deleteWeatherInfoWithLocationId(locationId: Long)
 }
