@@ -24,90 +24,23 @@ class WeatherInfoRepository @Inject constructor(
 ) {
 
     suspend fun getWeatherData(
-        hasGps: Boolean,
-        hasNetwork: Boolean,
         currentLocation: LocationEntity
     ): Resource<WeatherInfo?> {
+
         return getData(
-            hasGps, hasNetwork,
-            hasGpsHasInternet = {
-                return@getData when (val fetchingResult = fetchWeatherInfo(currentLocation)) {
-                    is Resource.Error -> Resource.Error(fetchingResult.message)
-
-                    is Resource.Success -> {
-                        appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(currentLocation.dbId)
-                        saveWeatherInfoToDb(fetchingResult.data)
-                        Resource.Success(fetchingResult.data.asDomainObject())
-                    }
-                }
+            networkCall = {
+                fetchWeatherInfo(currentLocation)
             },
-            hasGpsNoInternet = {
-                Resource.Error("aaaa")
+            saveToDbQuery = { response ->
+                appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(currentLocation.dbId)
+                saveWeatherInfoToDb(response)
             },
-            noGpsHasInternet = {
-                Resource.Error("aaa")
+            getFromDbQuery = {
+                getWeatherInfoFromDb(currentLocation)
             },
-            noGpsNoInternet = {
-                Resource.Error("aaa")
-            }
-        )
-    }
-
-    suspend fun <T, A> getData2(
-        hasGps: Boolean,
-        hasNetwork: Boolean,
-        networkCall: suspend () -> Resource<T>,
-        saveToDbQuery: suspend (T) -> Unit,
-        getFromDbQuery: suspend () -> Resource<A>,
-        transform : (T) -> A
-    ): Resource<A> {
-
-        if(hasNetwork)
-        {
-            if(hasGps)
-            {
-                when (val fetchingResult = networkCall())
-                {
-                    is Resource.Error -> Resource.Error<T>(fetchingResult.message)
-
-                    is Resource.Success ->{
-                        saveToDbQuery(fetchingResult.data)
-                        return Resource.Success(transform(fetchingResult.data))
-                    }
-                }
-            }
-            else
-            {
-
-            }
-        }
-        else
-        {
-
-        }
-
-        /*return if (hasNetwork) {
-            return if (hasGps) {
-
-
-                *//*when (val fetchingResult = networkCall()) {
-                    is Resource.Error -> Resource.Error(fetchingResult.message)
-
-                    is Resource.Success -> {
-                        appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(currentLocation.dbId)
-                        saveToDbQuery(fetchingResult.data)
-                        return Resource.Success(fetchingResult.data.asDomainObject())
-                    }
-                }*//*
-            } else {
-
-            }
-        } else {
-            if (hasGps) {
-
-            } else
-
-        }*/
+            transform = {
+                it.asDomainObject()
+            })
     }
 
 

@@ -1,5 +1,7 @@
 package com.example.weather.network
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.Response
 import java.lang.Exception
 
@@ -9,36 +11,36 @@ sealed class Resource<T> {
 }
 
 suspend fun <T> performNetworkCall(call: suspend () -> Response<T>): Resource<T> {
-    try {
-        val response = call()
-        if (response.isSuccessful) {
-            val body = response.body()
-            if (body != null) return Resource.Success(body)
+    return withContext(Dispatchers.IO)
+    {
+        try {
+            val response = call()
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) return@withContext Resource.Success(body)
+            }
+            return@withContext Resource.Error("${response.code()} ${response.message()}")
+        } catch (e: Exception) {
+            return@withContext Resource.Error(e.message ?: e.toString())
         }
-        return Resource.Error("${response.code()} ${response.message()}")
-    } catch (e: Exception) {
-        return Resource.Error(e.message ?: e.toString())
     }
 }
 
-suspend fun <T> getData(
-    hasGps: Boolean,
-    hasNetwork: Boolean,
-    hasGpsHasInternet: suspend () -> Resource<T>,
-    hasGpsNoInternet: suspend () -> Resource<T>,
-    noGpsHasInternet: suspend () -> Resource<T>,
-    noGpsNoInternet: suspend () -> Resource<T>,
-): Resource<T> {
-    return if (hasNetwork) {
-        if (hasGps) {
-            hasGpsHasInternet()
-        } else {
-            noGpsHasInternet()
+suspend fun <T, A> getData(
+    networkCall: suspend () -> Resource<T>,
+    saveToDbQuery: suspend (T) -> Unit,
+    getFromDbQuery: suspend () -> A?,
+    transform: (T) -> A
+): Resource<A> {
+    return when (val fetchingResult = networkCall()) {
+        is Resource.Error -> {
+            val data = getFromDbQuery()
+            if (data == null) Resource.Error(fetchingResult.message + "\nCannot get data from db")
+            else Resource.Success(data)
         }
-    } else {
-        if (hasGps) {
-            hasGpsNoInternet()
-        } else
-            noGpsNoInternet()
+        is Resource.Success -> {
+            saveToDbQuery(fetchingResult.data)
+            Resource.Success(transform(fetchingResult.data))
+        }
     }
 }

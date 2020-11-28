@@ -5,7 +5,7 @@ import com.example.weather.database.room_entities.LocationEntity
 
 @Dao
 interface LocationDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLocation(location: LocationEntity): Long
 
     @Update

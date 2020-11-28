@@ -65,7 +65,7 @@ class LocationTracker {
             )
         }
 
-        private fun isLocationEnabled(context: Context): Boolean {
+        fun isLocationEnabled(context: Context): Boolean {
             val locationManager =
                 context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             return LocationManagerCompat.isLocationEnabled(locationManager)

@@ -1,8 +1,8 @@
 package com.example.weather
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
-import android.net.Network
 import android.net.NetworkCapabilities
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -10,41 +10,44 @@ import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.lifecycle.asLiveData
 import com.example.weather.database.room_entities.LocationEntity
-import com.example.weather.network.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
 
-    private lateinit var btn : Button
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
+
+    @Inject
+    lateinit var sharedPrefManager: SharedPrefManager
+
+    private lateinit var btn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        btn = findViewById(R.id.button)
+        viewModel.currentLocationId = sharedPrefManager.getCurrentLocationId()
+        val hasGps = LocationTracker.isLocationEnabled(this)
 
-
-        viewModel.setIsNetWorkAvailable(isNetworkAvailable())
-
-        val l = LocationEntity(0.0, 0.0)
-        viewModel.insertLocation(l)
-        l.dbId = 1
-        viewModel.getWeatherInfoOfLocation(l).asLiveData()
-            .observe(this)
+        if (hasGps) {
+            LocationTracker.getCurrentLocation(this)
             {
-                if (it == null) return@observe
+                val currentLocation = LocationEntity(it.latitude, it.longitude)
+                if (viewModel.currentLocationId != -1L)
+                    currentLocation.dbId = viewModel.currentLocationId
 
-
+                viewModel.updateAndSetCurrentLocation(currentLocation)
             }
+        } else {
 
-        btn.setOnClickListener {
-            viewModel.deleteLocation(l)
         }
+
+        registerObservers()
     }
 
     override fun onRequestPermissionsResult(
@@ -80,4 +83,58 @@ class MainActivity : AppCompatActivity() {
                 || nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
                 && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
+
+    private fun registerObservers() {
+        viewModel.selectedLocation.observe(this)
+        {
+            if (it == null) return@observe
+
+            viewModel.getData(it)
+        }
+
+        viewModel.weatherInfo.observe(this)
+        {
+            Log.d("aaa", it.toString())
+        }
+
+    }
+
+    /*private fun refreshDataForSelectedLocation()
+    {
+        val hasNetwork = isNetworkAvailable()
+        val hasGps = LocationTracker.isLocationEnabled(this)
+
+        if(hasGps && hasNetwork)
+        {
+            if(viewModel.selectedLocationId == viewModel.currentLocationId)
+            {
+                val result = LocationTracker.getCurrentLocation(this)
+                {
+                    val location = LocationEntity(it.latitude, it.longitude)
+                    location.dbId = viewModel.currentLocationId
+                    viewModel.updateCurrentLocation(location)
+
+                    viewModel.getData(viewModel.currentLocationId)
+                }
+            }
+            else
+            {
+                viewModel.getData(viewModel.selectedLocationId)
+            }
+        }
+        else if (!hasGps && hasNetwork)
+        {
+
+        }
+        else if(hasGps && !hasNetwork)
+        {
+
+        }
+        else
+        {
+
+        }
+
+
+    }*/
 }

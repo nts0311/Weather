@@ -16,6 +16,6 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext appContext: Context): AppDatabase =
-        Room.inMemoryDatabaseBuilder(appContext.applicationContext, AppDatabase::class.java)
+        Room.databaseBuilder(appContext.applicationContext, AppDatabase::class.java, "aaaaaaaaa")
             .build()
 }
