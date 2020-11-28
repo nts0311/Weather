@@ -38,6 +38,7 @@ data class CurrentEntity(
 fun CurrentEntity.asDomainObject(weatherList: List<Weather>): CurrentWeather = CurrentWeather(
     dbId,
     weatherInfoId,
+    dt,
     sunrise,
     sunset,
     temp,

@@ -3,6 +3,7 @@ package com.example.weather.model.entites.domain_objects
 data class CurrentWeather(
     var dbId: Long = 0,
     var weatherInfoId: Long = 0,
+    var dt : Int,
     val sunrise: Int,
     val sunset: Int,
     val temp: Double,

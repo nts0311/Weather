@@ -9,6 +9,8 @@ import com.example.weather.model.entites.domain_objects.WeatherInfo
 import com.example.weather.network.Resource
 import com.example.weather.network.data_transfer_objects.OwmBaseResponse
 import com.example.weather.network.data_transfer_objects.asDatabaseObject
+import com.example.weather.network.data_transfer_objects.asDomainObject
+import com.example.weather.network.getData
 import com.example.weather.network.performNetworkCall
 import com.example.weather.network.services.OpenWeatherMapService
 import javax.inject.Inject
@@ -21,33 +23,93 @@ class WeatherInfoRepository @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) {
 
-    suspend fun getData(
+    suspend fun getWeatherData(
         hasGps: Boolean,
         hasNetwork: Boolean,
-        location: LocationEntity
+        currentLocation: LocationEntity
     ): Resource<WeatherInfo?> {
-        if (hasNetwork) {
-            if (hasGps) {
-                return when (val fetchingResult = fetchWeatherInfo(location)) {
+        return getData(
+            hasGps, hasNetwork,
+            hasGpsHasInternet = {
+                return@getData when (val fetchingResult = fetchWeatherInfo(currentLocation)) {
                     is Resource.Error -> Resource.Error(fetchingResult.message)
 
                     is Resource.Success -> {
-                        appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(location.dbId)
+                        appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(currentLocation.dbId)
                         saveWeatherInfoToDb(fetchingResult.data)
-                        Resource.Success(getWeatherInfoFromDb(location))
+                        Resource.Success(fetchingResult.data.asDomainObject())
                     }
                 }
-
-            } else {
-
+            },
+            hasGpsNoInternet = {
+                Resource.Error("aaaa")
+            },
+            noGpsHasInternet = {
+                Resource.Error("aaa")
+            },
+            noGpsNoInternet = {
+                Resource.Error("aaa")
             }
-        } else {
+        )
+    }
+
+    suspend fun <T, A> getData2(
+        hasGps: Boolean,
+        hasNetwork: Boolean,
+        networkCall: suspend () -> Resource<T>,
+        saveToDbQuery: suspend (T) -> Unit,
+        getFromDbQuery: suspend () -> Resource<A>,
+        transform : (T) -> A
+    ): Resource<A> {
+
+        if(hasNetwork)
+        {
             if(hasGps)
+            {
+                when (val fetchingResult = networkCall())
+                {
+                    is Resource.Error -> Resource.Error<T>(fetchingResult.message)
+
+                    is Resource.Success ->{
+                        saveToDbQuery(fetchingResult.data)
+                        return Resource.Success(transform(fetchingResult.data))
+                    }
+                }
+            }
+            else
             {
 
             }
         }
+        else
+        {
+
+        }
+
+        /*return if (hasNetwork) {
+            return if (hasGps) {
+
+
+                *//*when (val fetchingResult = networkCall()) {
+                    is Resource.Error -> Resource.Error(fetchingResult.message)
+
+                    is Resource.Success -> {
+                        appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(currentLocation.dbId)
+                        saveToDbQuery(fetchingResult.data)
+                        return Resource.Success(fetchingResult.data.asDomainObject())
+                    }
+                }*//*
+            } else {
+
+            }
+        } else {
+            if (hasGps) {
+
+            } else
+
+        }*/
     }
+
 
     suspend fun fetchWeatherInfo(location: LocationEntity) =
         performNetworkCall { weatherService.getWeatherInfo() }

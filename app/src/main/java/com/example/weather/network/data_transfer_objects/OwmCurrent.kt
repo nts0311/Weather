@@ -1,6 +1,7 @@
 package com.example.weather.network.data_transfer_objects
 
 import com.example.weather.database.room_entities.CurrentEntity
+import com.example.weather.model.entites.domain_objects.CurrentWeather
 
 
 data class OwmCurrent(
@@ -35,3 +36,23 @@ fun OwmCurrent.asDatabaseObject(): CurrentEntity = CurrentEntity(
     rain.oneHour,
     snow.oneHour
 )
+
+fun OwmCurrent.asDomainObject(): CurrentWeather = CurrentWeather(
+    0,
+    0,
+    dt,
+    sunrise,
+    sunset,
+    temp,
+    feels_like,
+    pressure,
+    humidity,
+    clouds,
+    visibility,
+    wind_speed,
+    wind_deg,
+    rain.oneHour,
+    snow.oneHour,
+    weather.asDomainObject()
+)
+

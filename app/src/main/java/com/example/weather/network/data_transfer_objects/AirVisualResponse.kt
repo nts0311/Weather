@@ -1,6 +1,7 @@
 package com.example.weather.network.data_transfer_objects
 
 import com.example.weather.database.room_entities.AirQualityEntity
+import com.example.weather.model.entites.domain_objects.AirQualityIndex
 
 data class AirVisualResponse(
     val city: String,
@@ -21,3 +22,6 @@ data class AvLocation(
 
 fun AirVisualResponse.asDatabaseObject(): AirQualityEntity =
     AirQualityEntity(data.current.pollution.aqius)
+
+fun AirVisualResponse.asDomainObject(): AirQualityIndex =
+    AirQualityIndex(0,0,data.current.pollution.aqius)

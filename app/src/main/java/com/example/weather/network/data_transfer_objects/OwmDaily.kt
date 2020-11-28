@@ -1,6 +1,7 @@
 package com.example.weather.network.data_transfer_objects
 
 import com.example.weather.database.room_entities.DailyEntity
+import com.example.weather.model.entites.domain_objects.DailyWeather
 
 
 data class OwmDaily(
@@ -44,4 +45,33 @@ fun OwmDaily.asDatabaseObject(): DailyEntity = DailyEntity(
     pop
 )
 
+fun OwmDaily.asDomainObject() = DailyWeather(
+    0,
+    0,
+    dt,
+    sunrise,
+    sunset,
+    temp.day,
+    temp.min,
+    temp.max,
+    temp.night,
+    temp.eve,
+    temp.morn,
+    feels_like.day,
+    feels_like.night,
+    feels_like.eve,
+    feels_like.morn,
+    pressure,
+    humidity,
+    wind_speed,
+    wind_deg,
+    clouds,
+    rain,
+    snow,
+    pop,
+    weather.asDomainObject()
+)
+
 fun List<OwmDaily>.asDatabaseObject() = map { it.asDatabaseObject() }
+
+fun List<OwmDaily>.asDomainObject() = map { it.asDomainObject() }

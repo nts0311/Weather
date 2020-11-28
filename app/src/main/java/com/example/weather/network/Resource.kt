@@ -20,3 +20,25 @@ suspend fun <T> performNetworkCall(call: suspend () -> Response<T>): Resource<T>
         return Resource.Error(e.message ?: e.toString())
     }
 }
+
+suspend fun <T> getData(
+    hasGps: Boolean,
+    hasNetwork: Boolean,
+    hasGpsHasInternet: suspend () -> Resource<T>,
+    hasGpsNoInternet: suspend () -> Resource<T>,
+    noGpsHasInternet: suspend () -> Resource<T>,
+    noGpsNoInternet: suspend () -> Resource<T>,
+): Resource<T> {
+    return if (hasNetwork) {
+        if (hasGps) {
+            hasGpsHasInternet()
+        } else {
+            noGpsHasInternet()
+        }
+    } else {
+        if (hasGps) {
+            hasGpsNoInternet()
+        } else
+            noGpsNoInternet()
+    }
+}

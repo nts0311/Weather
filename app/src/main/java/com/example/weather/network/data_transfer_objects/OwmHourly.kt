@@ -1,6 +1,7 @@
 package com.example.weather.network.data_transfer_objects
 
 import com.example.weather.database.room_entities.HourlyEntity
+import com.example.weather.model.entites.domain_objects.HourlyWeather
 
 
 data class OwmHourly(
@@ -34,4 +35,24 @@ fun OwmHourly.asDatabaseObject(): HourlyEntity = HourlyEntity(
     snow.oneHour
 )
 
+fun OwmHourly.asDomainObject() = HourlyWeather(
+    0,
+    0,
+    dt,
+    temp,
+    feels_like,
+    pressure,
+    humidity,
+    clouds,
+    visibility,
+    wind_speed,
+    wind_deg,
+    pop,
+    rain.oneHour,
+    snow.oneHour,
+    weather.asDomainObject()
+)
+
 fun List<OwmHourly>.asDatabaseObject() = map { it.asDatabaseObject() }
+
+fun List<OwmHourly>.asDomainObject() = map { it.asDomainObject() }
