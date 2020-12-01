@@ -25,29 +25,16 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var sharedPrefManager: SharedPrefManager
 
-    private lateinit var btn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         viewModel.currentLocationId = sharedPrefManager.getCurrentLocationId()
-        val hasGps = LocationTracker.isLocationEnabled(this)
-
-        if (hasGps) {
-            LocationTracker.getCurrentLocation(this)
-            {
-                val currentLocation = LocationEntity(it.latitude, it.longitude)
-                if (viewModel.currentLocationId != -1L)
-                    currentLocation.dbId = viewModel.currentLocationId
-
-                viewModel.updateAndSetCurrentLocation(currentLocation)
-            }
-        } else {
-
-        }
 
         registerObservers()
+
+        refresh()
     }
 
     override fun onRequestPermissionsResult(
@@ -59,9 +46,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             LocationTracker.REQUEST_LOCATION_PERMISSION_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults.all { it == 0 }) {
-                    LocationTracker.getCurrentLocation(this) {
-
-                    }
+                    refresh()
                 } else {
                     Toast.makeText(
                         applicationContext,
@@ -99,42 +84,24 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    /*private fun refreshDataForSelectedLocation()
+    private fun refresh()
     {
-        val hasNetwork = isNetworkAvailable()
         val hasGps = LocationTracker.isLocationEnabled(this)
-
-        if(hasGps && hasNetwork)
-        {
-            if(viewModel.selectedLocationId == viewModel.currentLocationId)
+        if (hasGps) {
+            LocationTracker.getCurrentLocation(this)
             {
-                val result = LocationTracker.getCurrentLocation(this)
-                {
-                    val location = LocationEntity(it.latitude, it.longitude)
-                    location.dbId = viewModel.currentLocationId
-                    viewModel.updateCurrentLocation(location)
+                val currentLocation = LocationEntity(it.latitude, it.longitude)
+                if (viewModel.currentLocationId != -1L)
+                    currentLocation.dbId = viewModel.currentLocationId
 
-                    viewModel.getData(viewModel.currentLocationId)
-                }
+                viewModel.updateAndSetCurrentLocation(currentLocation)
             }
+        } else {
+            if(viewModel.currentLocationId == -1L)
+                Toast.makeText(this, "Cannot load weather data: No GPS", Toast.LENGTH_SHORT).show()
             else
-            {
-                viewModel.getData(viewModel.selectedLocationId)
-            }
+                viewModel.setLocation(viewModel.currentLocationId)
         }
-        else if (!hasGps && hasNetwork)
-        {
+    }
 
-        }
-        else if(hasGps && !hasNetwork)
-        {
-
-        }
-        else
-        {
-
-        }
-
-
-    }*/
 }

@@ -32,30 +32,6 @@ constructor(
 
     private var getDataJob: Job? = null
 
-
-    /*fun getWeatherInfoOfLocation(location: LocationEntity) : Flow<WeatherInfo?>
-    {
-        return repository.getWeatherInfoFlow(location)
-    }
-
-    fun insertLocation(location: LocationEntity)
-    {
-        viewModelScope.launch {
-            repository.addLocation(location)
-        }
-    }
-
-    fun setIsNetWorkAvailable(isAvailable : Boolean)
-    {
-        repository.isNetWorkAvailable = isAvailable
-    }
-
-    fun deleteLocation(location: LocationEntity) {
-        viewModelScope.launch {
-            repository.deleteLocation(location)
-        }
-    }*/
-
     fun getData(location: LocationEntity) {
         getDataJob?.cancel()
 
@@ -76,10 +52,12 @@ constructor(
     fun updateAndSetCurrentLocation(location: LocationEntity) {
         viewModelScope.launch {
             if (currentLocationId == -1L) {
-                val id = async { locationRepository.insertLocation(location) }
-                sharedPrefManager.setCurrentLocationId(id.await())
+                val id = locationRepository.insertLocation(location)
+                location.dbId = id
+                sharedPrefManager.setCurrentLocationId(id)
             } else
-                launch { locationRepository.updateLocation(location) }.join()
+                locationRepository.updateLocation(location)
+
             setLocation(location.dbId)
         }
     }

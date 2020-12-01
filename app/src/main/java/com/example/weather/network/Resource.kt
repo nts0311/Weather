@@ -10,6 +10,7 @@ sealed class Resource<T> {
     data class Error<T>(val message: String) : Resource<T>()
 }
 
+/*
 suspend fun <T> performNetworkCall(call: suspend () -> Response<T>): Resource<T> {
     return withContext(Dispatchers.IO)
     {
@@ -43,4 +44,4 @@ suspend fun <T, A> getData(
             Resource.Success(transform(fetchingResult.data))
         }
     }
-}
+}*/

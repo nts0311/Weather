@@ -1,5 +1,6 @@
-package com.example.weather
 
+package com.example.weather
+/*
 import android.util.Log
 import com.example.weather.database.AppDatabase
 import com.example.weather.database.room_entities.LocationEntity
@@ -22,7 +23,9 @@ import javax.inject.Singleton
 @Singleton
 class Repository @Inject constructor(
     private val openWeatherMapService: OpenWeatherMapService,
-    /*private val openUvService: OpenUvService,*/
+    */
+/*private val openUvService: OpenUvService,*//*
+
     private val airVisualService: AirVisualService,
     private val appDatabase: AppDatabase
 ) {
@@ -125,4 +128,4 @@ class Repository @Inject constructor(
     suspend fun deleteLocation(location: LocationEntity) {
         appDatabase.locationDao.deleteLocation(location)
     }
-}
+}*/

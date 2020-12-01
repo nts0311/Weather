@@ -10,8 +10,6 @@ import com.example.weather.network.Resource
 import com.example.weather.network.data_transfer_objects.OwmBaseResponse
 import com.example.weather.network.data_transfer_objects.asDatabaseObject
 import com.example.weather.network.data_transfer_objects.asDomainObject
-import com.example.weather.network.getData
-import com.example.weather.network.performNetworkCall
 import com.example.weather.network.services.OpenWeatherMapService
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,7 +19,7 @@ class WeatherInfoRepository @Inject constructor(
     private val appDatabase: AppDatabase,
     private val weatherService: OpenWeatherMapService,
     private val sharedPreferences: SharedPreferences
-) {
+) : BaseRepository() {
 
     suspend fun getWeatherData(
         currentLocation: LocationEntity

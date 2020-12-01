@@ -13,7 +13,7 @@ import com.google.android.gms.location.*
 
 class LocationTracker {
     companion object {
-        fun getCurrentLocation(context: Context, locationListener: (Location) -> Unit): Boolean {
+        fun getCurrentLocation(context: Context, locationListener: (Location) -> Any): Boolean {
             if (!isLocationEnabled(context)) {
                 return false
             }
@@ -41,7 +41,7 @@ class LocationTracker {
         }
 
         @SuppressLint("MissingPermission")
-        private fun requestLocationUpdate(context: Context, locationListener: (Location) -> Unit) {
+        private fun requestLocationUpdate(context: Context, locationListener: (Location) -> Any) {
             val locationClient: FusedLocationProviderClient =
                 LocationServices.getFusedLocationProviderClient(context)
 
