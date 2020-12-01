@@ -21,15 +21,16 @@ import kotlin.coroutines.suspendCoroutine
 class FetchDataWorker @WorkerInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val weatherInfoRepository: WeatherInfoRepository,
-    private val locationRepository: LocationRepository,
-    sharedPreferences: SharedPreferences
+    private var weatherInfoRepository: WeatherInfoRepository,
+    private var locationRepository: LocationRepository,
+    private var sharedPreferences: SharedPreferences,
 ) : CoroutineWorker(appContext, workerParams) {
-
-    private val sharedPrefManager = SharedPrefManager(sharedPreferences)
+    lateinit var sharedPrefManager :SharedPrefManager
     private val appContext = appContext
 
     override suspend fun doWork(): Result {
+
+        sharedPrefManager = SharedPrefManager(sharedPreferences)
         val currentLocationId = sharedPrefManager.getCurrentLocationId()
 
         if(currentLocationId == -1L)
@@ -49,7 +50,6 @@ class FetchDataWorker @WorkerInject constructor(
             }
 
             locationRepository.updateLocation(currentLocation)
-            updateWeatherData(currentLocation)
         }
 
         return updateWeatherData(currentLocation)
@@ -67,7 +67,8 @@ class FetchDataWorker @WorkerInject constructor(
     private suspend fun updateWeatherData(location: LocationEntity): Result {
         return when (val owmResponse = weatherInfoRepository.fetchWeatherInfo(location)) {
             is Resource.Success -> {
-                weatherInfoRepository.saveWeatherInfoToDb(owmResponse.data)
+                weatherInfoRepository.deleteOldData(location.dbId)
+                weatherInfoRepository.saveWeatherInfoToDb(owmResponse.data, location.dbId)
                 Result.success()
             }
 

@@ -22,19 +22,19 @@ class WeatherInfoRepository @Inject constructor(
 ) : BaseRepository() {
 
     suspend fun getWeatherData(
-        currentLocation: LocationEntity
+        location: LocationEntity
     ): Resource<WeatherInfo?> {
 
         return getData(
             networkCall = {
-                fetchWeatherInfo(currentLocation)
+                fetchWeatherInfo(location)
             },
             saveToDbQuery = { response ->
-                appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(currentLocation.dbId)
-                saveWeatherInfoToDb(response)
+                deleteOldData(location.dbId)
+                saveWeatherInfoToDb(response, location.dbId)
             },
             getFromDbQuery = {
-                getWeatherInfoFromDb(currentLocation)
+                getWeatherInfoFromDb(location)
             },
             transform = {
                 it.asDomainObject()
@@ -45,9 +45,16 @@ class WeatherInfoRepository @Inject constructor(
     suspend fun fetchWeatherInfo(location: LocationEntity) =
         performNetworkCall { weatherService.getWeatherInfo() }
 
-    suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse) {
+    suspend fun deleteOldData(locationId : Long)
+    {
+        appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(locationId)
+    }
+
+    suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse, locationId : Long) {
         appDatabase.apply {
-            val weatherInfoId = weatherInfoDao.insertWeatherInfo(owmBaseResponse.asDatabaseObject())
+            val weatherInfo = owmBaseResponse.asDatabaseObject()
+            weatherInfo.locationId = locationId
+            val weatherInfoId = weatherInfoDao.insertWeatherInfo(weatherInfo)
 
             //Current Weather
             val currentEntity = owmBaseResponse.current.asDatabaseObject()

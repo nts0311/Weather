@@ -19,7 +19,7 @@ import com.example.weather.model.entites.domain_objects.WeatherInfo
 data class WeatherInfoEntity(
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0,
-    var locationId: Long = 1
+    var locationId: Long = 0
 )
 
 fun WeatherInfoEntity.asDomainObject(
