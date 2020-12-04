@@ -21,23 +21,24 @@ class UpdateDataWorker @WorkerInject constructor(
     private var locationRepository: LocationRepository,
     private var sharedPreferences: SharedPreferences,
 ) : CoroutineWorker(appContext, workerParams) {
-    lateinit var sharedPrefManager :SharedPrefManager
+    lateinit var sharedPrefManager: SharedPrefManager
     private val appContext = appContext
 
     override suspend fun doWork(): Result {
         val result = updateCurrentLocation()
-        val locations = locationRepository.getAllLocation()
-        weatherInfoRepository.updateWeatherData(locations)
+        if (result is Result.Failure || result is Result.Retry) return result
 
-        return result
+        val locations = locationRepository.getAllLocation()
+        val updateSuccess = weatherInfoRepository.updateWeatherData(locations)
+
+        return if (updateSuccess) Result.success() else Result.failure()
     }
 
-    private suspend fun updateCurrentLocation() : Result
-    {
+    private suspend fun updateCurrentLocation(): Result {
         sharedPrefManager = SharedPrefManager(sharedPreferences)
         val currentLocationId = sharedPrefManager.getCurrentLocationId()
 
-        if(currentLocationId == -1L)
+        if (currentLocationId == -1L)
             return Result.failure()
 
         val hasGps = LocationTracker.isLocationEnabled(appContext)
@@ -68,7 +69,7 @@ class UpdateDataWorker @WorkerInject constructor(
         }
     }
 
-    companion object{
+    companion object {
         const val UNIQUE_WORK_NAME = "update_weather_data_work"
     }
 }

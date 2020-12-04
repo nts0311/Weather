@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.work.ListenableWorker
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.example.weather.database.AppDatabase
+import com.example.weather.database.room_entities.LocationEntity
 import com.example.weather.repositories.WeatherInfoRepository
 import com.example.weather.worker.UpdateDataWorker
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -48,33 +49,9 @@ class WorkerTest {
         val worker = TestListenableWorkerBuilder<UpdateDataWorker>(context).setWorkerFactory(workerFactory).build() as UpdateDataWorker
 
         runBlocking {
+            appDb.locationDao.insertLocation(LocationEntity(69.0,96.0))
             val result = worker.doWork()
-            assertThat(result, `is`(ListenableWorker.Result.failure()))
-        }
-    }
-
-    @Test
-    fun test1()
-    {
-        runBlocking {
-            val curLoc = appDb.locationDao.getLocation(1L)
-
-
-
-            val wInfoF = appDb.weatherInfoDao.getWeatherInfoByLocationFlow(1L).distinctUntilChanged()
-
-            wInfoF.onEach {
-                if (it ==null) return@onEach
-                Log.d("aaa", it.dbId.toString())
-            }
-                .launchIn(this)
-
-
-            wRepo.getWeatherData(curLoc)
-
-
-
-            Log.d("aaa", "aaaaaa")
+            assertThat(result, `is`(ListenableWorker.Result.success()))
         }
     }
 }

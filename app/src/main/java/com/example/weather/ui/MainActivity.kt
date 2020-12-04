@@ -1,4 +1,4 @@
-package com.example.weather
+package com.example.weather.ui
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -10,7 +10,12 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.example.weather.LocationTracker
+import com.example.weather.R
+import com.example.weather.SharedPrefManager
 import com.example.weather.database.room_entities.LocationEntity
+import com.example.weather.ui.adapters.WeatherFragmentStateAdapter
+import com.example.weather.viewmodels.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
@@ -26,11 +31,19 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var sharedPrefManager: SharedPrefManager
 
+    private lateinit var stateAdapter : WeatherFragmentStateAdapter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        updateCurrentLocation()
+
+        if(!isNetworkAvailable())
+        Toast.makeText(this, getString(R.string.network_not_available), Toast.LENGTH_SHORT)
+            .show()
 
 
         val gradientDrawable = GradientDrawable(
@@ -78,8 +91,7 @@ class MainActivity : AppCompatActivity() {
                 && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
-    private fun updateCurrentLocation()
-    {
+    private fun updateCurrentLocation() {
         viewModel.currentLocationId = sharedPrefManager.getCurrentLocationId()
         val hasGps = LocationTracker.isLocationEnabled(this)
         if (hasGps) {
@@ -92,25 +104,26 @@ class MainActivity : AppCompatActivity() {
                 viewModel.updateCurrentLocation(currentLocation)
             }
         } else {
-            if(viewModel.currentLocationId == -1L)
+            if (viewModel.currentLocationId == -1L)
                 Toast.makeText(this, "Cannot load weather data: No GPS", Toast.LENGTH_SHORT).show()
             else {
-                if(isNetworkAvailable())
+                if (isNetworkAvailable())
                     viewModel.updateData()
             }
+
         }
     }
 
-    private fun registerObservers()
-    {
+    private fun registerObservers() {
         viewModel.locationList.observe(this)
         {
             setupViewPager2(it)
         }
     }
 
-    private fun setupViewPager2(locationList : List<LocationEntity>)
-    {
-
+    private fun setupViewPager2(locationList: List<LocationEntity>) {
+        stateAdapter = WeatherFragmentStateAdapter(this)
+        stateAdapter.locationList = locationList
+        main_viewpager.adapter = stateAdapter
     }
 }

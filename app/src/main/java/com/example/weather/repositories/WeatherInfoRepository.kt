@@ -14,6 +14,7 @@ import com.example.weather.network.data_transfer_objects.asDomainObject
 import com.example.weather.network.services.OpenWeatherMapService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.yield
@@ -26,10 +27,11 @@ class WeatherInfoRepository @Inject constructor(
     private val weatherService: OpenWeatherMapService
 ) : BaseRepository() {
 
-    suspend fun updateWeatherData(locations: List<LocationEntity>) {
+    suspend fun updateWeatherData(locations: List<LocationEntity>): Boolean {
+        var success: Boolean
         for (l in locations) {
             yield()
-            updateData(
+            success = updateData(
                 networkCall = {
                     fetchWeatherInfo(l)
                 },
@@ -38,17 +40,20 @@ class WeatherInfoRepository @Inject constructor(
                     saveWeatherInfoToDb(it, l.dbId)
                 }
             )
+
+            if (!success) return false
         }
+        return true
     }
 
-    suspend fun fetchWeatherInfo(location: LocationEntity) =
+    private suspend fun fetchWeatherInfo(location: LocationEntity) =
         performNetworkCall { weatherService.getWeatherInfo() }
 
-    suspend fun deleteOldData(locationId: Long) {
+    private suspend fun deleteOldData(locationId: Long) {
         appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(locationId)
     }
 
-    suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse, locationId: Long) {
+    private suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse, locationId: Long) {
         appDatabase.apply {
             val weatherInfo = owmBaseResponse.asDatabaseObject()
             weatherInfo.locationId = locationId
@@ -64,11 +69,11 @@ class WeatherInfoRepository @Inject constructor(
             weatherEntityDao.insertWeatherEntities(currentWeatherList)
 
 
-            val hourlyEntities = owmBaseResponse.hourly.asDatabaseObject()
-                .onEach { it.weatherInfoId = weatherInfoId }
-            val hourlyIds = hourlyEntityDao.insertHourlyEntities(hourlyEntities)
+            val hourlyEntities = owmBaseResponse.hourly.take(6)
+            val hourlyIds = hourlyEntityDao.insertHourlyEntities(
+                hourlyEntities.asDatabaseObject().onEach { it.weatherInfoId = weatherInfoId })
             var i = 0
-            owmBaseResponse.hourly.forEach {
+            hourlyEntities.forEach {
                 val weatherList =
                     it.weather.asDatabaseObject().onEach { w -> w.hourlyWeatherId = hourlyIds[i] }
                 i++
@@ -76,10 +81,10 @@ class WeatherInfoRepository @Inject constructor(
             }
 
             i = 0
+            val dailyEntities = owmBaseResponse.daily.take(6)
             val dailyIds = dailyEntityDao.insertDailyEntities(
-                owmBaseResponse.daily.asDatabaseObject()
-                    .onEach { it.weatherInfoId = weatherInfoId })
-            owmBaseResponse.daily.forEach {
+                    dailyEntities.asDatabaseObject().onEach { it.weatherInfoId = weatherInfoId })
+            dailyEntities.forEach {
                 val weatherList =
                     it.weather.asDatabaseObject().onEach { w -> w.dailyWeatherId = dailyIds[i] }
                 i++
@@ -122,4 +127,5 @@ class WeatherInfoRepository @Inject constructor(
                 if (it == null) null
                 else getWeatherInfoFromDb(it)
             }
+            .distinctUntilChanged()
 }
