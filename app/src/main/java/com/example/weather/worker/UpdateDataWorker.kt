@@ -9,16 +9,12 @@ import androidx.work.WorkerParameters
 import com.example.weather.LocationTracker
 import com.example.weather.SharedPrefManager
 import com.example.weather.database.room_entities.LocationEntity
-import com.example.weather.network.Resource
 import com.example.weather.repositories.LocationRepository
 import com.example.weather.repositories.WeatherInfoRepository
 import kotlinx.coroutines.*
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
-class FetchDataWorker @WorkerInject constructor(
+class UpdateDataWorker @WorkerInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private var weatherInfoRepository: WeatherInfoRepository,
@@ -29,7 +25,15 @@ class FetchDataWorker @WorkerInject constructor(
     private val appContext = appContext
 
     override suspend fun doWork(): Result {
+        val result = updateCurrentLocation()
+        val locations = locationRepository.getAllLocation()
+        weatherInfoRepository.updateWeatherData(locations)
 
+        return result
+    }
+
+    private suspend fun updateCurrentLocation() : Result
+    {
         sharedPrefManager = SharedPrefManager(sharedPreferences)
         val currentLocationId = sharedPrefManager.getCurrentLocationId()
 
@@ -50,9 +54,9 @@ class FetchDataWorker @WorkerInject constructor(
             }
 
             locationRepository.updateLocation(currentLocation)
-        }
 
-        return updateWeatherData(currentLocation)
+        }
+        return Result.success()
     }
 
     private suspend fun getCurrentLocationTimeout() = withTimeout(30000) {
@@ -60,20 +64,6 @@ class FetchDataWorker @WorkerInject constructor(
             LocationTracker.getCurrentLocation(appContext)
             {
                 cont.resume(LocationEntity(it.latitude, it.longitude))
-            }
-        }
-    }
-
-    private suspend fun updateWeatherData(location: LocationEntity): Result {
-        return when (val owmResponse = weatherInfoRepository.fetchWeatherInfo(location)) {
-            is Resource.Success -> {
-                weatherInfoRepository.deleteOldData(location.dbId)
-                weatherInfoRepository.saveWeatherInfoToDb(owmResponse.data, location.dbId)
-                Result.success()
-            }
-
-            is Resource.Error -> {
-                Result.failure()
             }
         }
     }

@@ -42,7 +42,7 @@ open class BaseRepository {
         }
     }
 
-    suspend fun <T, A> updateData(
+    suspend fun <T> updateData(
         networkCall: suspend () -> Resource<T>,
         saveToDbQuery: suspend (T) -> Unit
     ) : Boolean {

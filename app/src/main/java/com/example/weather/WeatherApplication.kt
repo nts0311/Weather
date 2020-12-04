@@ -1,17 +1,12 @@
 package com.example.weather
 
 import android.app.Application
-import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.*
-import com.example.weather.worker.FetchDataWorker
+import com.example.weather.worker.UpdateDataWorker
 import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 @HiltAndroidApp
 class WeatherApplication : Application(), Configuration.Provider {
@@ -35,13 +30,13 @@ class WeatherApplication : Application(), Configuration.Provider {
             .build()
 
         val updateWeatherDataRequest =
-            PeriodicWorkRequestBuilder<FetchDataWorker>(3, TimeUnit.HOURS)
+            PeriodicWorkRequestBuilder<UpdateDataWorker>(3, TimeUnit.HOURS)
                 .setConstraints(constraints)
-                .addTag(FetchDataWorker.UNIQUE_WORK_NAME)
+                .addTag(UpdateDataWorker.UNIQUE_WORK_NAME)
                 .build()
 
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-            FetchDataWorker.UNIQUE_WORK_NAME,
+            UpdateDataWorker.UNIQUE_WORK_NAME,
             ExistingPeriodicWorkPolicy.KEEP,
             updateWeatherDataRequest
         )

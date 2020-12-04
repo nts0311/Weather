@@ -16,4 +16,7 @@ interface LocationDao {
 
     @Query("SELECT * FROM LocationEntity WHERE dbId = :locationId LIMIT 1")
     suspend fun getLocation(locationId: Long): LocationEntity
+
+    @Query("SELECT * FROM LocationEntity")
+    suspend fun getAllLocation() : List<LocationEntity>
 }

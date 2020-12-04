@@ -17,4 +17,6 @@ class LocationRepository @Inject constructor(private val appDatabase: AppDatabas
 
 
     suspend fun getLocationById(id:Long) = appDatabase.locationDao.getLocation(id)
+
+    suspend fun getAllLocation() = appDatabase.locationDao.getAllLocation()
 }

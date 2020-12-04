@@ -6,12 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.view.WindowInsetsController
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -45,17 +40,10 @@ class MainActivity : AppCompatActivity() {
                 Color.parseColor("#4bcade")
             )
         )
+        gradientDrawable.cornerRadius = 0f
+        root_layout.background = gradientDrawable
 
-
-        gradientDrawable.cornerRadius = 0f;
-
-
-        //Set Gradient
-        root_layout.setBackground(gradientDrawable);
-
-        viewModel.currentLocationId = sharedPrefManager.getCurrentLocationId()
         registerObservers()
-        refresh()
     }
 
     override fun onRequestPermissionsResult(
@@ -67,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             LocationTracker.REQUEST_LOCATION_PERMISSION_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults.all { it == 0 }) {
-                    refresh()
+                    updateCurrentLocation()
                 } else {
                     Toast.makeText(
                         applicationContext,
@@ -90,23 +78,9 @@ class MainActivity : AppCompatActivity() {
                 && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
-    private fun registerObservers() {
-        viewModel.selectedLocation.observe(this)
-        {
-            if (it == null) return@observe
-
-            viewModel.getData(it)
-        }
-
-        viewModel.weatherInfo.observe(this)
-        {
-            Log.d("aaa", it.toString())
-        }
-
-    }
-
-    private fun refresh()
+    private fun updateCurrentLocation()
     {
+        viewModel.currentLocationId = sharedPrefManager.getCurrentLocationId()
         val hasGps = LocationTracker.isLocationEnabled(this)
         if (hasGps) {
             LocationTracker.getCurrentLocation(this)
@@ -115,16 +89,28 @@ class MainActivity : AppCompatActivity() {
                 if (viewModel.currentLocationId != -1L)
                     currentLocation.dbId = viewModel.currentLocationId
 
-                viewModel.updateAndSetCurrentLocation(currentLocation)
+                viewModel.updateCurrentLocation(currentLocation)
             }
         } else {
             if(viewModel.currentLocationId == -1L)
                 Toast.makeText(this, "Cannot load weather data: No GPS", Toast.LENGTH_SHORT).show()
-            else
-                viewModel.setLocation(viewModel.currentLocationId)
+            else {
+                if(isNetworkAvailable())
+                    viewModel.updateData()
+            }
         }
     }
 
+    private fun registerObservers()
+    {
+        viewModel.locationList.observe(this)
+        {
+            setupViewPager2(it)
+        }
+    }
 
+    private fun setupViewPager2(locationList : List<LocationEntity>)
+    {
 
+    }
 }

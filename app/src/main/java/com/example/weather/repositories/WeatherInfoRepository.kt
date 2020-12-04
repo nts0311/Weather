@@ -3,6 +3,7 @@ package com.example.weather.repositories
 import android.content.SharedPreferences
 import com.example.weather.database.AppDatabase
 import com.example.weather.database.room_entities.LocationEntity
+import com.example.weather.database.room_entities.WeatherInfoEntity
 import com.example.weather.database.room_entities.asDomainObject
 import com.example.weather.database.room_entities.toDomainObject
 import com.example.weather.model.entites.domain_objects.WeatherInfo
@@ -11,48 +12,43 @@ import com.example.weather.network.data_transfer_objects.OwmBaseResponse
 import com.example.weather.network.data_transfer_objects.asDatabaseObject
 import com.example.weather.network.data_transfer_objects.asDomainObject
 import com.example.weather.network.services.OpenWeatherMapService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.yield
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class WeatherInfoRepository @Inject constructor(
     private val appDatabase: AppDatabase,
-    private val weatherService: OpenWeatherMapService,
-    private val sharedPreferences: SharedPreferences
+    private val weatherService: OpenWeatherMapService
 ) : BaseRepository() {
 
-    suspend fun getWeatherData(
-        location: LocationEntity
-    ): Resource<WeatherInfo?> {
-
-        return getData(
-            networkCall = {
-                fetchWeatherInfo(location)
-            },
-            saveToDbQuery = { response ->
-                deleteOldData(location.dbId)
-                saveWeatherInfoToDb(response, location.dbId)
-            },
-            getFromDbQuery = {
-                getWeatherInfoFromDb(location)
-            },
-            transform = {
-                it.asDomainObject()
-            })
+    suspend fun updateWeatherData(locations: List<LocationEntity>) {
+        for (l in locations) {
+            yield()
+            updateData(
+                networkCall = {
+                    fetchWeatherInfo(l)
+                },
+                saveToDbQuery = {
+                    deleteOldData(l.dbId)
+                    saveWeatherInfoToDb(it, l.dbId)
+                }
+            )
+        }
     }
-
-
-
 
     suspend fun fetchWeatherInfo(location: LocationEntity) =
         performNetworkCall { weatherService.getWeatherInfo() }
 
-    suspend fun deleteOldData(locationId : Long)
-    {
+    suspend fun deleteOldData(locationId: Long) {
         appDatabase.weatherInfoDao.deleteWeatherInfoWithLocationId(locationId)
     }
 
-    suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse, locationId : Long) {
+    suspend fun saveWeatherInfoToDb(owmBaseResponse: OwmBaseResponse, locationId: Long) {
         appDatabase.apply {
             val weatherInfo = owmBaseResponse.asDatabaseObject()
             weatherInfo.locationId = locationId
@@ -93,11 +89,8 @@ class WeatherInfoRepository @Inject constructor(
     }
 
 
-    suspend fun getWeatherInfoFromDb(location: LocationEntity): WeatherInfo? {
+    private suspend fun getWeatherInfoFromDb(weatherInfoEntity: WeatherInfoEntity): WeatherInfo {
         return appDatabase.run {
-            val weatherInfoEntity =
-                weatherInfoDao.getWeatherInfoByLocation(location.dbId) ?: return null
-
             val currentEntity = currentEntityDao.getCurrentEntity(weatherInfoEntity.dbId)
             val hourlyEntities = hourlyEntityDao.getHourlyEntities(weatherInfoEntity.dbId)
             val dailyEntities = dailyEntityDao.getDailyEntities(weatherInfoEntity.dbId)
@@ -123,4 +116,10 @@ class WeatherInfoRepository @Inject constructor(
         }
     }
 
+    fun getWeatherInfoFlow(locationId: Long): Flow<WeatherInfo?> =
+        appDatabase.weatherInfoDao.getWeatherInfoByLocationFlow(locationId)
+            .map {
+                if (it == null) null
+                else getWeatherInfoFromDb(it)
+            }
 }
