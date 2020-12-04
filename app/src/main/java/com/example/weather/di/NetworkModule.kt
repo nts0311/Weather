@@ -24,21 +24,24 @@ object NetworkModule {
             .build()
 
     @Provides
-    @Singleton
-    fun provideOpenWeatherMapService(moshi: Moshi): OpenWeatherMapService = Retrofit.Builder()
-        .baseUrl("https://jsonkeeper.com/") //testing
-        .addConverterFactory(MoshiConverterFactory.create(moshi))
-        .addCallAdapterFactory(CoroutineCallAdapterFactory())
-        .build()
-        .create(OpenWeatherMapService::class.java)
+    fun provideRetrofitBuilder(moshi: Moshi) =
+        Retrofit.Builder()
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+
 
     @Provides
     @Singleton
-    fun provideAirVisualService(moshi: Moshi): AirVisualService = Retrofit.Builder()
-        .baseUrl("https://jsonkeeper.com/") //testing
-        .addConverterFactory(MoshiConverterFactory.create(moshi))
-        .addCallAdapterFactory(CoroutineCallAdapterFactory())
-        .build()
-        .create(AirVisualService::class.java)
+    fun provideOpenWeatherMapService(retrofitBuilder: Retrofit.Builder): OpenWeatherMapService =
+        retrofitBuilder.baseUrl("https://jsonkeeper.com/") //testing
+            .build()
+            .create(OpenWeatherMapService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideAirVisualService(retrofitBuilder: Retrofit.Builder): AirVisualService =
+        retrofitBuilder.baseUrl("https://jsonkeeper.com/") //testing
+            .build()
+            .create(AirVisualService::class.java)
 
 }

@@ -41,4 +41,19 @@ open class BaseRepository {
             }
         }
     }
+
+    suspend fun <T, A> updateData(
+        networkCall: suspend () -> Resource<T>,
+        saveToDbQuery: suspend (T) -> Unit
+    ) : Boolean {
+        return when (val fetchingResult = networkCall()) {
+            is Resource.Error -> {
+                false
+            }
+            is Resource.Success -> {
+                saveToDbQuery(fetchingResult.data)
+                true
+            }
+        }
+    }
 }

@@ -2,16 +2,22 @@ package com.example.weather
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
+import android.view.View
+import android.view.WindowInsetsController
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import com.example.weather.database.room_entities.LocationEntity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
 
 
@@ -29,11 +35,26 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setSupportActionBar(toolbar)
+
+
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(
+                Color.parseColor("#644bde"),
+                Color.parseColor("#4bcade")
+            )
+        )
+
+
+        gradientDrawable.cornerRadius = 0f;
+
+
+        //Set Gradient
+        root_layout.setBackground(gradientDrawable);
 
         viewModel.currentLocationId = sharedPrefManager.getCurrentLocationId()
-
         registerObservers()
-
         refresh()
     }
 
@@ -103,5 +124,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setLocation(viewModel.currentLocationId)
         }
     }
+
+
 
 }

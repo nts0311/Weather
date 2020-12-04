@@ -42,6 +42,8 @@ class WeatherInfoRepository @Inject constructor(
     }
 
 
+
+
     suspend fun fetchWeatherInfo(location: LocationEntity) =
         performNetworkCall { weatherService.getWeatherInfo() }
 
